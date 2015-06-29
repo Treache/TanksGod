@@ -1,43 +1,47 @@
-# include <iostream>
 #include <SFML/Network.hpp>
-#include "Header.h"
+#include <iostream>
 
-using namespace std;
 using namespace sf;
-/////////////////////////////globals
+using namespace std;
+
 TcpSocket socket;
 char sendChar[1024];
 char recvChar[1024];
-size_t received;
 
-bool playerButton[7] = { 0, 0, 0, 0, 0, 0, 0 };
-vector <Tanks> tank;
-vector <Bullets> bullet;
-
-////////////////////////////end of globals
-
-
-////////////////////////////funcs
-////////////////////////////////////////////////////send & recv from server
-void sendRecv()
+inline void sendRecv()
 {
-
+	size_t received;
 
 	while (1)
 	{
+		socket.send("a", 1024);
 		socket.receive(recvChar, 1024, received);
 		cout << recvChar << endl;
-
 	}
-}
-////////////////////////////////////////////////////end of main game
-////////////////////////////end of funcs
 
+}
+
+void Play()
+{
+	cout << "Game started";
+}
 
 int main()
 {
-	Socket::Status status = socket.connect("localhost", 10003);
+	Socket::Status status = socket.connect("localhost", 10011);
+
+	bool playerButton[7] = {};
+
+	Thread thread(&sendRecv);
+	thread.launch();
+
+	for (int i = 0; i < 7; i++)
+	{
+		sendChar[i] = playerButton[i];
+	}
 	socket.send(sendChar, 1024);
+	for (int i = 0; i<7; i++)
+		cout << sendChar[i] << endl;
 
 	return 0;
 }
