@@ -1,0 +1,325 @@
+#include <cmath>
+
+#include "Classes.h"
+//meqdar dehie static ha
+int Tanks::tedade_tank = 0;
+
+///////////////////////////////////////make point[4]
+void Tanks::make_points()
+{
+	//point 0
+	this->point[0].x = this->centerPoint.x -
+		pow(pow(this->lenght, 2) + pow(this->width, 2), 1 / 2) * cos(this->alfa * PI / 180 - atan(this->width / this->lenght));
+
+	this->point[0].y = this->centerPoint.y +
+		pow(pow(this->lenght, 2) + pow(this->width, 2), 1 / 2) * sin(this->alfa * PI / 180 - atan(this->width / this->lenght));
+	//point 1
+	this->point[1].x = this->centerPoint.x +
+		pow(pow(this->lenght, 2) + pow(this->width, 2), 1 / 2) * cos(this->alfa * PI / 180 - atan(this->width / this->lenght));
+
+	this->point[1].y = this->centerPoint.y +
+		pow(pow(this->lenght, 2) + pow(this->width, 2), 1 / 2) * sin(this->alfa * PI / 180 - atan(this->width / this->lenght));
+	//point 2
+	this->point[2].x = this->centerPoint.x +
+		pow(pow(this->lenght, 2) + pow(this->width, 2), 1 / 2) * cos(this->alfa * PI / 180 - atan(this->width / this->lenght));
+
+	this->point[2].y = this->centerPoint.y -
+		pow(pow(this->lenght, 2) + pow(this->width, 2), 1 / 2) * sin(this->alfa * PI / 180 - atan(this->width / this->lenght));
+	//point 3
+	this->point[3].x = this->centerPoint.x -
+		pow(pow(this->lenght, 2) + pow(this->width, 2), 1 / 2) * cos(this->alfa * PI / 180 - atan(this->width / this->lenght));
+
+	this->point[3].y = this->centerPoint.y +
+		pow(pow(this->lenght, 2) + pow(this->width, 2), 1 / 2) * sin(this->alfa * PI / 180 - atan(this->width / this->lenght));
+
+	this->point[4] = this->point[0];
+}
+
+
+///////////////////////////////////////MAKE THE MOMENTUM FOR THE TANKS
+void Tanks::make_tekane(Walls* wall , bool part)
+{
+	if (part)
+		this->velocity.x *= -1;
+	else
+		this->velocity.y *= -1;
+}
+
+
+void Tanks::make_tekane(Bullets* bullet, std::vector<Bullets*>* bullets)
+{
+	this->velocity.x = (this->mass*this->velocity.x + bullet->mass*bullet->velocity.x) / (this->mass + bullet->mass);
+	this->velocity.y = (this->mass*this->velocity.y + bullet->mass*bullet->velocity.y) / (this->mass + bullet->mass);
+
+	this->health -= Tanks::health_bullet;
+	////tabeye gui vase monfajer kardane tank
+	bullet->bullet_Destructor(bullets);
+}
+
+
+void Tanks::make_tekane(Tanks* tank)
+{
+	Vector2D temp_velocity;
+	temp_velocity = this->velocity;
+
+	this->velocity.x = (2 * tank->mass / (this->mass + tank->mass))*tank->velocity.x
+		- ((this->mass - tank->mass) / (this->mass + tank->mass))*temp_velocity.x;
+
+	tank->velocity.x = (2 * this->mass / (this->mass + tank->mass))*temp_velocity.x
+		- ((tank->mass - this->mass) / (this->mass + tank->mass))*tank->velocity.x;
+
+
+	this->velocity.y = (2 * tank->mass / (this->mass + tank->mass))*tank->velocity.y
+		- ((this->mass - tank->mass) / (this->mass + tank->mass))*temp_velocity.y;
+
+	tank->velocity.x = (2 * this->mass / (this->mass + tank->mass))*temp_velocity.y
+		- ((tank->mass - this->mass) / (this->mass + tank->mass))*tank->velocity.y;
+}
+
+
+////////////////////////////////////////////////make_variables
+void Tanks::make_variable(Walls* wall, int i0, int i1)
+{
+	//bedast ovordane variable.x & variable.y
+	this->variable.x = (this->point[i0].y - wall->point[i1].y) / //variable.x
+		(((wall->point[i1 + 1].y - wall->point[i1].y) / (wall->point[i1 + 1].x - wall->point[i1].x)) -
+		((this->point[i0 + 1].y - this->point[i0].y) / (this->point[i0 + 1].x - this->point[i0].x))) + this->point[i0].x;
+
+	this->variable.y = this->point[i0].y + //variable.y
+		(this->variable.x - this->point[i0].x)*
+		(this->point[i0 + 1].y - this->point[i0].y) / (this->point[i0 + 1].x - this->point[i0].x);
+}
+
+
+void Tanks::make_variable(Tanks* tank, int i0, int i1)
+{
+	//bedast ovordane variable.x & variable.y
+	this->variable.x = (this->point[i0].y - tank->point[i1].y) / //variable.x
+		(((tank->point[i1 + 1].y - tank->point[i1].y) / (tank->point[i1 + 1].x - tank->point[i1].x)) -
+		((this->point[i0 + 1].y - this->point[i0].y) / (this->point[i0 + 1].x - this->point[i0].x))) + this->point[i0].x;
+
+	this->variable.y = this->point[i0].y + //variable.y
+		(this->variable.x - this->point[i0].x)*
+		(this->point[i0+1].y - this->point[i0].y) / (this->point[i0+1].x - this->point[i0].x);
+}
+
+///////////////////////////////////////check collision
+bool Tanks::check_Collision(Walls* wall)
+{
+	for (int i0 = 0; i0 < 4; i0++)//tank
+		for (int i1 = 0; i1 < 4; i1++)//wall
+		{
+			make_variable(wall, i0, i1);
+
+			if ((this->point[i0].x <= this->variable.x  &&  this->variable.x <= this->point[i0 + 1].x) ||
+				(this->point[i0].x >= this->variable.x&&this->variable.x >= this->point[i0 + 1].x))
+			{
+				if ((wall->point[i1].x <= this->variable.x  &&  this->variable.x <= wall->point[i1 + 1].x) ||
+					(wall->point[i1].x >= this->variable.x  &&  this->variable.x >= wall->point[i1 + 1].x))
+				{
+					//if (this->variable.x == )
+				}
+			}
+		}
+	return 0;
+}
+
+bool Tanks::check_Collision(Bullets* bullet)
+{
+	return 1;
+}
+
+bool Tanks::check_Collision(Tanks* tank)
+{
+	return 1;
+}
+
+
+///////////////////////////////////////main collision check
+void Tanks::check_Collision(std::vector<Walls*>* wall, std::vector<Bullets*>* bullet, std::vector<Tanks*>* tank)
+{
+	////CHECK KARDANE FASELE HA K ASN EHTEMALE BARKHORD VOJOOD DARE YA NA
+	for (int i0 = 0; i0 < wall->size(); i0++)
+	{
+		//FASELEYE WALL BA TANK
+		if (sqrt(pow((*wall)[i0]->centerPoint.x - this->centerPoint.x, 2) + pow((*wall)[i0]->centerPoint.y - this->centerPoint.y, 2))
+			<= sqrt(pow(this->lenght + (*wall)[i0]->lenght, 2) + pow(this->width + (*wall)[i0]->width, 2)) + 2)
+		{
+			this->check_Collision((*wall)[i0]);
+		}
+	}
+
+	for (int i0 = 0; i0 < bullet->size(); i0++)
+	{
+		//FASELEYE BULLET BA TANK
+		if (sqrt(pow((*bullet)[i0]->centerPoint.x - this->centerPoint.x, 2) + pow((*bullet)[i0]->centerPoint.y - this->centerPoint.y, 2))
+			<= sqrt(pow(this->lenght, 2) + pow(this->width, 2) + pow((*bullet)[i0]->radius, 2)) + 2);
+		{
+			this->check_Collision((*bullet)[i0]);
+		}
+	}
+
+	for (int i0 = this->ID + 1; i0 < tank->size(); i0++)
+	{
+		//FASELEYE TANK BA TANK
+		if (sqrt(pow((*tank)[i0]->centerPoint.x - this->centerPoint.x, 2) + pow((*tank)[i0]->centerPoint.y - this->centerPoint.y, 2))
+			<= sqrt(pow(this->lenght + (*tank)[i0]->lenght, 2) + pow(this->width + (*tank)[i0]->width, 2)) + 2)
+		{
+			this->check_Collision((*tank)[i0]);
+		}
+	}
+}
+
+///////////////////////////////////////update mana & health & mass
+void Tanks::update_MHM()
+{
+	//mana
+	if (this->mana <= 100 - this->mana_plus)
+		this->mana += this->mana_plus;
+	else
+		this->mana = 100;
+	//health
+	if (this->health <= 100 - this->health_plus)
+		this->health += this->health_plus;
+	else
+		this->health = 100;
+
+	//////////
+	this->mass = Tanks::mass0 + 2 * this->mana;
+}
+
+
+///////////////////////////////////////build new bullet
+void Tanks::make_new_bullet(std::vector<Bullets*>* bullet)
+{
+	Vector2D bullet_center;
+	Vector2D bullet_velocity;
+
+	bullet_center.x = this->centerPoint.x + this->pipe_lenght*cos(this->beta*PI / 180);
+	bullet_center.y = this->centerPoint.y + this->pipe_lenght*sin(this->beta*PI / 180);
+
+	bullet_velocity.x = Bullets::const_Velocity*cos(this->beta*PI / 180);
+	bullet_velocity.y = Bullets::const_Velocity*sin(this->beta*PI / 180);
+
+	bullet->push_back(new Bullets(bullet_center, bullet_velocity));
+}
+
+
+///////////////////////////////////////partb shodan aqab vase shellik
+void Tanks::make_tekane()
+{
+	Vector2D bullet_velocity;
+	bullet_velocity.x = Bullets::const_Velocity*cos(this->beta*PI / 180);
+	bullet_velocity.y = Bullets::const_Velocity*sin(this->beta*PI / 180);
+
+	this->velocity.x -= bullet_velocity.x*Bullets::mass / this->mass;
+	this->velocity.y -= bullet_velocity.y*Bullets::mass / this->mass;
+}
+
+///////////////////////////////////////check button[7]
+void Tanks::check_buttons(std::vector<Bullets*>* bullet)
+{
+	//pishran
+	if (this->button[0] == 1 && this->button[1] == 0)
+	{
+		this->Niroo_Pishran.x = Tanks::pishran * cos(alfa * PI / 180);
+		this->Niroo_Pishran.y = Tanks::pishran * sin(alfa * PI / 180);
+	}
+	else if (this->button[0] == 0 && this->button[1] == 1)
+	{
+		this->Niroo_Pishran.x = Tanks::pasran * cos(alfa * PI / 180);
+		this->Niroo_Pishran.y = Tanks::pasran * sin(alfa * PI / 180);
+	}
+	else if (this->button[0] == 1 && this->button[1] == 1)
+	{
+		this->Niroo_Pishran.x = (Tanks::pishran + Tanks::pasran) * cos(alfa * PI / 180);
+		this->Niroo_Pishran.y = (Tanks::pishran + Tanks::pasran) * sin(alfa * PI / 180);
+	}
+	else
+	{
+		this->Niroo_Pishran.x = 0;
+		this->Niroo_Pishran.y = 0;
+	}
+	//charkheshe badane
+	if (this->button[2] == 1 && this->button[3] == 0)
+	{
+		this->alfa += Tanks::alfa_velocity;
+		this->beta += Tanks::beta_velocity;
+	}
+	else if (this->button[2] == 0 && this->button[3] == 1)
+	{
+		this->alfa -= Tanks::alfa_velocity;
+		this->beta -= Tanks::beta_velocity;
+	}
+	//charkheshe loole
+	if (this->button[4] == 1 && this->button[5] == 0)
+		this->beta += Tanks::beta_velocity;
+	else if (this->button[4] == 0 && this->button[5] == 1)
+		this->beta -= Tanks::beta_velocity;
+	//shellike toop
+	if (this->button[6] == 1)
+		if (mana >= mana_bullet)
+		{
+			this->make_new_bullet(bullet);//shellik e toop
+			this->make_tekane();//part shodan aqab
+		}
+}
+
+
+///////////////////////////////////////update force & accelerate & velocity & mokhtasat ha
+void Tanks::update_mokhtasat()
+{
+	//////niroo ha
+	//friction
+	this->Niroo_Friction.x = -Tanks::friction_Const * pow(this->velocity.x, 2);
+	this->Niroo_Friction.y = -Tanks::friction_Const * pow(this->velocity.y, 2);
+
+	//////mokhtasat ha
+	///force
+	this->final_Force.x = this->Niroo_Pishran.x + this->Niroo_Friction.x;
+	this->final_Force.y = this->Niroo_Pishran.y + this->Niroo_Friction.y;
+	///acceleration
+	this->acceleration.x = this->final_Force.x / this->mass;
+	this->acceleration.y = this->final_Force.y / this->mass;
+	///velocity
+	this->velocity.x += this->acceleration.x;
+	this->velocity.y += this->acceleration.y;
+	///mokhtasat
+	this->centerPoint.x += this->velocity.x;
+	this->centerPoint.y += this->velocity.y;
+}
+
+
+///////////////////////////////////////check healthy of the tank
+void Tanks::check_Healthy(std::vector<Tanks*>* tank)
+{
+	if (this->health <= 0)
+	{
+		for (int i0 = this->ID + 1; i0 < Tanks::tedade_tank; i0++)
+			(*tank)[i0]->ID -= 1;
+		Tanks::tedade_tank -= 1;
+		tank->erase(tank->begin() + this->ID);
+		delete this;
+	}
+}
+
+
+///////////////////////////////////////main update
+void Tanks::update(std::vector<Walls*>* wall, std::vector<Bullets*>* bullet, std::vector<Tanks*>* tank)
+{
+	//make point[4]
+	this->make_points();
+	//check collision
+	this->check_Collision(wall, bullet, tank);
+	//update mana & health & mass
+	this->update_MHM();
+	//buttons
+	this->check_buttons(bullet);
+	//udpate mokhtasat ha
+	this->update_mokhtasat();	
+	//check healthy
+	this->check_Healthy(tank);
+}
+
+}
+
