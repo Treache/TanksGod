@@ -1,0 +1,10 @@
+Bullets::Bullets(Vector2D centerPoint, Vector2D velocity)
+{
+	this->centerPoint = centerPoint;
+	this->velocity = velocity;
+
+	this->ID = Bullets::tedade_bullet;
+	Bullets::tedade_bullet++;
+	this->time_left = Bullets::explode_time;
+}
+
