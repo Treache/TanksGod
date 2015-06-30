@@ -1,0 +1,54 @@
+#include <cmath>
+
+#include "Classes.h"
+
+//tarife static ha
+int Walls::tedade_wall = 0;
+////////////////////////////////////make equations
+void Walls::make_points()
+{
+	//point 0
+	this->point[0].x = this->centerPoint.x -
+		pow(pow(this->lenght, 2) + pow(this->width, 2), 1 / 2) * cos(this->alfa * PI / 180 - atan(this->width / this->lenght));
+
+	this->point[0].y = this->centerPoint.y +
+		pow(pow(this->lenght, 2) + pow(this->width, 2), 1 / 2) * sin(this->alfa * PI / 180 - atan(this->width / this->lenght));
+	//point 1
+	this->point[1].x = this->centerPoint.x +
+		pow(pow(this->lenght, 2) + pow(this->width, 2), 1 / 2) * cos(this->alfa * PI / 180 - atan(this->width / this->lenght));
+
+	this->point[1].y = this->centerPoint.y +
+		pow(pow(this->lenght, 2) + pow(this->width, 2), 1 / 2) * sin(this->alfa * PI / 180 - atan(this->width / this->lenght));
+	//point 2
+	this->point[2].x = this->centerPoint.x +
+		pow(pow(this->lenght, 2) + pow(this->width, 2), 1 / 2) * cos(this->alfa * PI / 180 - atan(this->width / this->lenght));
+
+	this->point[2].y = this->centerPoint.y -
+		pow(pow(this->lenght, 2) + pow(this->width, 2), 1 / 2) * sin(this->alfa * PI / 180 - atan(this->width / this->lenght));
+	//point 3
+	this->point[3].x = this->centerPoint.x -
+		pow(pow(this->lenght, 2) + pow(this->width, 2), 1 / 2) * cos(this->alfa * PI / 180 - atan(this->width / this->lenght));
+
+	this->point[3].y = this->centerPoint.y +
+		pow(pow(this->lenght, 2) + pow(this->width, 2), 1 / 2) * sin(this->alfa * PI / 180 - atan(this->width / this->lenght));
+
+	this->point[4] = this->point[0];
+}
+
+void Walls::make_Equations()
+{}
+
+Walls::Walls(Vector2D centerPoint, int width, int lenght, int alfa)
+{
+	this->centerPoint = centerPoint;
+	this->width = width;
+	this->lenght = lenght;
+	this->alfa = alfa;
+
+	this->ID = Walls::tedade_wall;
+	Walls::tedade_wall++;
+
+	this->make_points();
+}
+
+
