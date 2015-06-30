@@ -1,0 +1,15 @@
+
+Walls::Walls(Vector2D centerPoint, int width, int lenght, int alfa)
+{
+	this->centerPoint = centerPoint;
+	this->width = width;
+	this->lenght = lenght;
+	this->alfa = alfa;
+
+	this->ID = Walls::tedade_wall;
+	Walls::tedade_wall++;
+
+	this->make_points();
+}
+
+
