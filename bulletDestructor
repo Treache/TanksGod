@@ -1,0 +1,10 @@
+void Bullets::bullet_Destructor(std::vector<Bullets*>* bullet)
+{
+	for (int i0 = this->ID + 1; i0 < Bullets::tedade_bullet; i0++)
+		(*bullet)[i0]->ID--;
+	Bullets::tedade_bullet--;
+
+	bullet->erase(bullet->begin() + this->ID);
+	delete this;
+}
+
