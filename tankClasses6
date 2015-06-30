@@ -1,0 +1,26 @@
+
+////////////////////////////////////////////////make_variables
+void Tanks::make_variable(Walls* wall, int i0, int i1)
+{
+	//bedast ovordane variable.x & variable.y
+	this->variable.x = (this->point[i0].y - wall->point[i1].y) / //variable.x
+		(((wall->point[i1 + 1].y - wall->point[i1].y) / (wall->point[i1 + 1].x - wall->point[i1].x)) -
+		((this->point[i0 + 1].y - this->point[i0].y) / (this->point[i0 + 1].x - this->point[i0].x))) + this->point[i0].x;
+
+	this->variable.y = this->point[i0].y + //variable.y
+		(this->variable.x - this->point[i0].x)*
+		(this->point[i0 + 1].y - this->point[i0].y) / (this->point[i0 + 1].x - this->point[i0].x);
+}
+
+
+void Tanks::make_variable(Tanks* tank, int i0, int i1)
+{
+	//bedast ovordane variable.x & variable.y
+	this->variable.x = (this->point[i0].y - tank->point[i1].y) / //variable.x
+		(((tank->point[i1 + 1].y - tank->point[i1].y) / (tank->point[i1 + 1].x - tank->point[i1].x)) -
+		((this->point[i0 + 1].y - this->point[i0].y) / (this->point[i0 + 1].x - this->point[i0].x))) + this->point[i0].x;
+
+	this->variable.y = this->point[i0].y + //variable.y
+		(this->variable.x - this->point[i0].x)*
+		(this->point[i0+1].y - this->point[i0].y) / (this->point[i0+1].x - this->point[i0].x);
+}
