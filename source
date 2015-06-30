@@ -1,0 +1,445 @@
+#include <iostream>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Window.hpp>
+#include <SFML/Network.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Image.hpp>
+#include "Header.h"
+
+using namespace std;
+using namespace sf;
+
+/////////////////////////////globals
+TcpSocket socket;
+char sendChar[1024];
+char recvChar[1024];
+size_t received;
+
+bool playerButton[7];
+
+vector <Walls> wall;
+vector <Tanks> tank;
+vector <Bullets> bullet;
+
+
+
+////////gui globals
+
+//tank body
+float r = 60 ;
+float s = 740 ;
+
+//tank pipe 
+float p ;
+float q ;
+
+
+////////////////////////////end of globals
+
+
+////////////////////////////funcs
+
+////////////////////////////////////////////////////build map
+inline void buidMap()
+{
+
+}
+////////////////////////////////////////////////////end of build walls
+
+
+
+////////////////////////////////////////////////////send & recv from server
+void sendRecv()
+{
+
+
+        while(1)
+        {
+            for (int i = 0 ; i < tank.size() ; i++)
+            {
+                sendChar[i] = playerButton[i] ;
+            }
+
+            socket.send("a" , 1024);
+            socket.receive(recvChar , 1024 , received);
+            //cout << recvChar << endl ;
+
+            for(int i0 = 0; i0 < tank.size(); i0++)
+            {
+                for(int i1 = 0; i1 < 7; i1++)
+                {
+                    tank[i0].button[i1] = recvChar[7*i0 + i1];
+                    cout<<tank[i0].button[i1]<<endl;
+                }
+            }
+        }
+
+}
+
+////////////////////////////////////////////////////end of send & recv from server
+
+////////////////////////////////////////////////////click the buttons
+void pressButton()
+{
+
+}
+////////////////////////////////////////////////////end of click the buttons
+
+////////////////////////////////////////////////////main game
+inline void mainGame()
+{
+    //cout << "Game started" ;
+
+    ////
+	int playerID;
+
+	while (true)
+	{
+        for (int i0 = 0; i0 < tank.size(); i0++)
+        {
+            /////////////////////////////////////////////////////////////button works
+            if(tank[i0].button[0] == true && tank[i0].button[1] == false)//forward
+                tank[i0].velocity = tank[i0].vecForwardVelocity;
+            if(tank[i0].button[1] == true && tank[i0].button[0] == false)//backward
+                tank[i0].velocity = tank[i0].vecBackwardVelocity;
+            if(tank[i0].button[2] == true && tank[i0].button[3] == false)//body left
+                tank[i0].bodyRotateSpeed = tank[i0].bodyRotationVelocity;
+            if(tank[i0].button[3] == true && tank[i0].button[2] == false)//body right
+                tank[i0].bodyRotateSpeed = -tank[i0].bodyRotationVelocity;
+            if(tank[i0].button[4] == true && tank[i0].button[5] == false)//pipe left
+                tank[i0].pipeRotateSpeed = tank[i0].pipeRotationVelocity;
+            if(tank[i0].button[5] == true && tank[i0].button[4] == false)//pipe right
+                tank[i0].pipeRotateSpeed = -tank[i0].pipeRotationVelocity;
+            if(tank[i0].button[6] == true)//shoot
+                tank[i0].button[6] = false;
+            /////////////////////////////////////////////////////////////END button works
+            ///update();
+            ///gui show the pics
+        }
+	}
+}
+////////////////////////////////////////////////////end of main game
+
+////////////////////////////end of funcs
+
+
+int main()
+{
+	
+	//key pushes
+	playerButton[4] = false;//pipe to left
+	playerButton[5] = false;//pipe to right
+	playerButton[0] = false;//Up arrow tank move forward
+	playerButton[3] = false;//Right arrow tank move right
+	playerButton[2] = false;//Left arrow tank move left
+	playerButton[1] = false;//Down arrow tank move backward
+	playerButton[6] = false;//shooting
+	
+
+	sf::RenderWindow mainWin(sf::VideoMode(800, 600), "tanksGod" );
+
+	//mainWin.setFramerateLimit(60);
+
+	//background
+	sf::Texture texture;
+
+	texture.loadFromFile("1.png");
+           
+    sf::Sprite sprite;
+	
+	if (!texture.loadFromFile("1.png"))
+	{
+		cout<<"An error occured while loading background"<<endl;
+		return 0;
+	}
+	
+	
+     
+    //tank body     
+    sf::Texture tankBody;
+	
+	tankBody.loadFromFile("Tank-b-g.png");
+	
+	sf::Sprite tankB;
+	
+	if (!tankBody.loadFromFile("Tank-b-g.png"))
+	{
+		cout<<"An error occured while loading tank body"<<endl;
+		return 0;
+	}
+	
+	
+	 //tank pipe     
+    sf::Texture tankPipe;
+	
+	tankPipe.loadFromFile("Tank-p-g.png");
+	
+	sf::Sprite tankP;
+	
+	if (!tankPipe.loadFromFile("Tank-p-g.png"))
+	{
+		cout<<"An error occured while loading tank pipe"<<endl;
+		return 0;
+	}
+	
+	
+
+
+   // run the program as long as the window is open
+   while (mainWin.isOpen())
+   {
+	   	mainWin.display();
+	   
+	   
+	   //background        
+		if ( texture.loadFromFile( "1.png" , sf::IntRect(0,0,800,600) ) )
+		{
+			texture.setRepeated(false);
+			sprite.setTexture(texture);
+			mainWin.clear();
+			mainWin.draw(sprite);
+			
+		}
+		
+		
+		//tank body
+		if ( tankBody.loadFromFile( "Tank-b-g.png") )
+		{
+			//tankBody.setRepeated(false);
+			tankB.setTexture(tankBody);
+			//mainWin.clear();
+			tankBody.setSmooth(true);
+			mainWin.draw(tankB);
+			
+		}
+		
+		//tank body
+		if ( tankPipe.loadFromFile( "Tank-p-g.png") )
+		{
+			//tankBody.setRepeated(false);
+			tankP.setTexture(tankPipe);
+			//mainWin.clear();
+			tankPipe.setSmooth(true);
+			mainWin.draw(tankP);
+			
+		}
+		   
+		   
+        // check all the window's events that were triggered since the last iteration of the loop
+        sf::Event event;
+        while (mainWin.pollEvent(event))
+        {
+           //"close requested" event: we close the window
+           if (event.type == sf::Event::Closed)
+           mainWin.close();	
+            
+/*
+            if (event.type == sf::Event::LostFocus)
+				mainWin.pause();
+
+			if (event.type == sf::Event::GainedFocus)
+				mainWin.resume();
+				*/
+            
+           if (event.type == sf::Event::KeyPressed)
+			{
+				if (event.key.code == sf::Keyboard::Escape)
+				{
+					return 0;
+				}
+				
+				if (event.key.code == sf::Keyboard::A)
+				{
+					playerButton[4] == true;
+					//rotate pipe to left
+				}
+				
+				if (event.key.code == sf::Keyboard::D)
+				{
+					playerButton[5] == true;
+					//rotate pipe to right
+				}
+				
+				if (event.key.code == sf::Keyboard::Up)
+				{
+					playerButton[0] == true;
+					//move forward
+				}
+				
+				if (event.key.code == sf::Keyboard::Down)
+				{
+					playerButton[1] == true;
+					//move backward
+				}
+				
+				if (event.key.code == sf::Keyboard::Right)
+				{
+					playerButton[3] == true;
+					//move to right
+				}
+				
+				if (event.key.code == sf::Keyboard::Left)
+				{
+					playerButton[2] == true;
+					//move to left
+				}
+
+				if (event.key.code == sf::Keyboard::Space)
+				{
+					playerButton[6] == false;
+					//shoot
+				}
+
+				
+			}
+            
+             if (event.type == sf::Event::KeyReleased)
+			{
+				if (event.key.code == sf::Keyboard::A)
+				{
+					playerButton[4] == false;
+					//rotate pipe to left
+				}
+				
+				if (event.key.code == sf::Keyboard::D)
+				{
+					playerButton[5] == false;
+					//rotate pipe to right
+				}
+				
+				if (event.key.code == sf::Keyboard::Up)
+				{
+					playerButton[0] == false;
+					//move forward
+				}
+				
+				if (event.key.code == sf::Keyboard::Down)
+				{
+					playerButton[1] == false;
+					//move backward
+				}
+				
+				if (event.key.code == sf::Keyboard::Right)
+				{
+					playerButton[3] == false;
+					//move to right
+				}
+				
+				if (event.key.code == sf::Keyboard::Left)
+				{
+					playerButton[2] == false;
+					//move to left
+				}
+				
+				if (event.key.code == sf::Keyboard::Space)
+				{
+					playerButton[6] == false;
+					//shoot
+				}
+			}
+        }
+       
+       //tank body
+				
+		if ( playerButton[2] == true )
+		{
+			r += -13;
+		}
+				
+		if ( playerButton[3] == true )
+		{
+			r += 13;
+		}
+				
+		if ( playerButton[1] == true )
+		{
+			s += 13;
+		}
+				
+		if ( playerButton[0] == true )
+		{
+			s -= 13;
+		}
+				
+				
+		//tank pipe
+				
+		if ( playerButton[5] == true )
+		{	   
+			//rotate tank pipe to right
+		}
+				
+		if ( playerButton[4] == true )
+		{
+			//rotate tank pipe to left
+		}
+				
+				
+				
+		//controls for not leaving window
+				
+		if ( r>1140 )
+			r = 1140;
+
+		if ( p<60 )
+			p = 60;
+
+
+		if ( p> 530 )
+			p = 530;
+
+
+		if ( q>740 )
+			q = 740;
+				
+				
+		if ( s<60 )
+			s = 60;
+				
+					
+		if ( q > 740 )
+			q = 740;
+				
+				
+		if ( s > 740 )
+			s = 740;
+		if ( s < 60 )
+			s = 60;
+					
+					
+		if ( p> 530 )
+			p = 530;
+		if ( p<60 )
+			p = 60;
+						
+						
+		if ( r>1140 )
+			r = 1140;
+		if ( r<670 )
+			r = 670;
+				
+        
+    }	
+
+	
+	
+    Socket::Status status = socket.connect("localhost", 10011);
+
+    buidMap();
+
+    /////build threads
+    Thread sendrecvThread(&sendRecv);
+    Thread mainGameThread(&mainGame);
+    Thread pressButtonThread(&pressButton);
+
+    /////launch threads
+    sendrecvThread.launch();
+    pressButtonThread.launch();
+    mainGameThread.launch();
+/////////////////////////////////////
+	
+	return 0;
+	
+}
