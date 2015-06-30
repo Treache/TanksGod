@@ -1,0 +1,18 @@
+void Bullets::make_tekane(Bullets* bullet)
+{
+	Vector2D temp_velocity;
+	temp_velocity = this->velocity;
+
+	this->velocity.x = (2 * bullet->mass / (this->mass + bullet->mass))*bullet->velocity.x
+		- ((this->mass - bullet->mass) / (this->mass + bullet->mass))*temp_velocity.x;
+
+	bullet->velocity.x = (2 * this->mass / (this->mass + bullet->mass))*temp_velocity.x
+		- ((bullet->mass - this->mass) / (this->mass + bullet->mass))*bullet->velocity.x;
+
+
+	this->velocity.y = (2 * bullet->mass / (this->mass + bullet->mass))*bullet->velocity.y
+		- ((this->mass - bullet->mass) / (this->mass + bullet->mass))*temp_velocity.y;
+
+	bullet->velocity.x = (2 * this->mass / (this->mass + bullet->mass))*temp_velocity.y
+		- ((bullet->mass - this->mass) / (this->mass + bullet->mass))*bullet->velocity.y;
+}
