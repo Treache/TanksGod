@@ -1,0 +1,21 @@
+
+void Tanks::make_tekane(Tanks* tank)
+{
+	Vector2D temp_velocity;
+	temp_velocity = this->velocity;
+
+	this->velocity.x = (2 * tank->mass / (this->mass + tank->mass))*tank->velocity.x
+		- ((this->mass - tank->mass) / (this->mass + tank->mass))*temp_velocity.x;
+
+	tank->velocity.x = (2 * this->mass / (this->mass + tank->mass))*temp_velocity.x
+		- ((tank->mass - this->mass) / (this->mass + tank->mass))*tank->velocity.x;
+
+
+	this->velocity.y = (2 * tank->mass / (this->mass + tank->mass))*tank->velocity.y
+		- ((this->mass - tank->mass) / (this->mass + tank->mass))*temp_velocity.y;
+
+	tank->velocity.x = (2 * this->mass / (this->mass + tank->mass))*temp_velocity.y
+		- ((tank->mass - this->mass) / (this->mass + tank->mass))*tank->velocity.y;
+}
+
+
