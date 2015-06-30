@@ -1,0 +1,117 @@
+#include <cmath>
+
+#include "Classes.h"
+
+//
+int Bullets::tedade_bullet = 0;
+
+//
+Bullets::Bullets(Vector2D centerPoint, Vector2D velocity)
+{
+	this->centerPoint = centerPoint;
+	this->velocity = velocity;
+
+	this->ID = Bullets::tedade_bullet;
+	Bullets::tedade_bullet++;
+	this->time_left = Bullets::explode_time;
+}
+
+//////
+void Bullets::make_tekane(Walls* wall, bool part)
+{
+	if (part)
+		this->velocity.x *= -1;
+	else
+		this->velocity.y *= -1;
+}
+
+void Bullets::make_tekane(Bullets* bullet)
+{
+	Vector2D temp_velocity;
+	temp_velocity = this->velocity;
+
+	this->velocity.x = (2 * bullet->mass / (this->mass + bullet->mass))*bullet->velocity.x
+		- ((this->mass - bullet->mass) / (this->mass + bullet->mass))*temp_velocity.x;
+
+	bullet->velocity.x = (2 * this->mass / (this->mass + bullet->mass))*temp_velocity.x
+		- ((bullet->mass - this->mass) / (this->mass + bullet->mass))*bullet->velocity.x;
+
+
+	this->velocity.y = (2 * bullet->mass / (this->mass + bullet->mass))*bullet->velocity.y
+		- ((this->mass - bullet->mass) / (this->mass + bullet->mass))*temp_velocity.y;
+
+	bullet->velocity.x = (2 * this->mass / (this->mass + bullet->mass))*temp_velocity.y
+		- ((bullet->mass - this->mass) / (this->mass + bullet->mass))*bullet->velocity.y;
+}
+
+//////
+bool Bullets::check_Collision(Walls* wall)
+{
+	return 1;
+}
+//
+bool Bullets::check_Collision(Bullets* bullet)
+{
+	return 1;
+}
+
+
+
+///////////////////////////////////////main collision check
+void Bullets::check_Collision(std::vector<Walls*>* wall, std::vector<Bullets*>* bullet)
+{
+	////CHECK KARDANE FASELE HA K ASN EHTEMALE BARKHORD VOJOOD DARE YA NA
+	for (int i0 = 0; i0 < wall->size(); i0++)
+	{
+		//FASELEYE WALL BA Bullet
+		if (sqrt(pow((*wall)[i0]->centerPoint.x - this->centerPoint.x, 2) + pow((*wall)[i0]->centerPoint.y - this->centerPoint.y, 2))
+			<= sqrt(pow(this->radius + (*wall)[i0]->lenght, 2) + pow(this->radius + (*wall)[i0]->width, 2)) + 2)
+		{
+			if (this->check_Collision((*wall)[i0]))
+			{
+				this->make_tekane((*wall)[i0], 1);
+			}
+		}
+	}
+
+	for (int i0 = 0; i0 < bullet->size(); i0++)
+	{
+		//FASELEYE BULLET BA TANK
+		if (sqrt(pow((*bullet)[i0]->centerPoint.x - this->centerPoint.x, 2) + pow((*bullet)[i0]->centerPoint.y - this->centerPoint.y, 2))
+			<= sqrt(pow(this->radius, 2) + pow(this->radius, 2) + pow((*bullet)[i0]->radius, 2)) + 2);
+		{
+			this->check_Collision((*bullet)[i0]);
+		}
+	}
+}
+
+//
+void Bullets::bullet_Destructor(std::vector<Bullets*>* bullet)
+{
+	for (int i0 = this->ID + 1; i0 < Bullets::tedade_bullet; i0++)
+		(*bullet)[i0]->ID--;
+	Bullets::tedade_bullet--;
+
+	bullet->erase(bullet->begin() + this->ID);
+	delete this;
+}
+
+//
+void Bullets::update_mokhtasat()
+{
+	this->centerPoint.x += this->velocity.x;
+	this->centerPoint.y += this->velocity.y;
+}
+
+
+//
+void Bullets::update(std::vector<Walls*>* wall, std::vector<Bullets*>* bullet)
+{
+	this->time_left -= 1;
+	if (time_left <= 0)
+		this->bullet_Destructor(bullet);
+	
+	check_Collision(wall,bullet);
+
+	update_mokhtasat();
+}
