@@ -1,0 +1,18 @@
+void Bullets::update_mokhtasat()
+{
+	this->centerPoint.x += this->velocity.x;
+	this->centerPoint.y += this->velocity.y;
+}
+
+
+//
+void Bullets::update(std::vector<Walls*>* wall, std::vector<Bullets*>* bullet)
+{
+	this->time_left -= 1;
+	if (time_left <= 0)
+		this->bullet_Destructor(bullet);
+	
+	check_Collision(wall,bullet);
+
+	update_mokhtasat();
+}
