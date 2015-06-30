@@ -1,0 +1,27 @@
+void Bullets::check_Collision(std::vector<Walls*>* wall, std::vector<Bullets*>* bullet)
+{
+	////CHECK KARDANE FASELE HA K ASN EHTEMALE BARKHORD VOJOOD DARE YA NA
+	for (int i0 = 0; i0 < wall->size(); i0++)
+	{
+		//FASELEYE WALL BA Bullet
+		if (sqrt(pow((*wall)[i0]->centerPoint.x - this->centerPoint.x, 2) + pow((*wall)[i0]->centerPoint.y - this->centerPoint.y, 2))
+			<= sqrt(pow(this->radius + (*wall)[i0]->lenght, 2) + pow(this->radius + (*wall)[i0]->width, 2)) + 2)
+		{
+			if (this->check_Collision((*wall)[i0]))
+			{
+				this->make_tekane((*wall)[i0], 1);
+			}
+		}
+	}
+
+	for (int i0 = 0; i0 < bullet->size(); i0++)
+	{
+		//FASELEYE BULLET BA TANK
+		if (sqrt(pow((*bullet)[i0]->centerPoint.x - this->centerPoint.x, 2) + pow((*bullet)[i0]->centerPoint.y - this->centerPoint.y, 2))
+			<= sqrt(pow(this->radius, 2) + pow(this->radius, 2) + pow((*bullet)[i0]->radius, 2)) + 2);
+		{
+			this->check_Collision((*bullet)[i0]);
+		}
+	}
+}
+
